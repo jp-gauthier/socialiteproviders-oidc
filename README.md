@@ -8,10 +8,6 @@ composer require jp-gauthier/socialiteproviders-oidc
 
 Please see the [Base Installation Guide](https://socialiteproviders.com/usage/), then follow the provider specific instructions below.
 
-## Specific configuration
-
-Follow [this link](https://docs.whmcs.com/OpenID_Connect) to create OpenID credentials in your WHMCS installation
-
 ### Add configuration to `config/services.php`
 
 ```php
