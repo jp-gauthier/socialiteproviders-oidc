@@ -1,6 +1,6 @@
 <?php
 
-namespace SocialiteProviders\OIDC;
+namespace JPGauthier\SocialiteProviders\OIDC;
 
 use GuzzleHttp\RequestOptions;
 use SocialiteProviders\Manager\OAuth2\AbstractProvider;

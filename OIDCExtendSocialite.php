@@ -1,6 +1,6 @@
 <?php
 
-namespace SocialiteProviders\OIDC;
+namespace JPGauthier\SocialiteProviders\OIDC;
 
 use SocialiteProviders\Manager\SocialiteWasCalled;
 
