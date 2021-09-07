@@ -74,7 +74,8 @@ class Provider extends AbstractProvider
             [
                 'client_id'     => $this->clientId,
                 'redirect_uri'  => $this->redirectUrl,
-                'response_type' => 'code',
+                // https://darutk.medium.com/diagrams-of-all-the-openid-connect-flows-6968e3990660
+                'response_type' => 'code id_token',
                 'scope'         => $this->formatScopes($this->scopes, $this->scopeSeparator),
                 'state'         => $state,
             ],
