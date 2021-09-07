@@ -1,9 +1,5 @@
 # OpenID Connect (OIDC) for Laravel Socialite
 
-```bash
-composer require jp-gauthier/socialiteproviders-oidc
-```
-
 ## Installation & Basic Usage
 
 Please see the [Base Installation Guide](https://socialiteproviders.com/usage/), then follow the provider specific instructions below.
