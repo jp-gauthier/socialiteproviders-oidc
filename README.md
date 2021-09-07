@@ -1,4 +1,4 @@
-# WHMCS
+# OpenID Connect (OIDC)
 
 ```bash
 composer require jp-gauthier/socialiteproviders-oidc
