@@ -1,5 +1,5 @@
 {
-    "name": "jp-gauthier/socialiteproviders-crha",
+    "name": "jp-gauthier/socialiteproviders-oidc",
     "description": "OpenID Connect OAuth2 Provider for Laravel Socialite",
     "keywords": [
         "laravel",
@@ -21,7 +21,7 @@
     },
     "autoload": {
         "psr-4": {
-            "SocialiteProviders\\CRHA\\": ""
+            "SocialiteProviders\\OIDC\\": ""
         }
     }
 }
