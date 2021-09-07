@@ -1,7 +1,7 @@
 # WHMCS
 
 ```bash
-composer require socialiteproviders/whmcs
+composer require jp-gauthier/socialiteproviders-oidc
 ```
 
 ## Installation & Basic Usage
@@ -15,7 +15,7 @@ Follow [this link](https://docs.whmcs.com/OpenID_Connect) to create OpenID crede
 ### Add configuration to `config/services.php`
 
 ```php
-'crha' => [
+'oidc' => [
     'client_id' => env('OPENID_CLIENT_ID'),
     'client_secret' => env('OPENID_CLIENT_SECRET'),
     'redirect' => env('OPENID_REDIRECT_URI'),
@@ -33,7 +33,7 @@ Add the event to your `listen[]` array in `app/Providers/EventServiceProvider`. 
 protected $listen = [
     \SocialiteProviders\Manager\SocialiteWasCalled::class => [
         // ... other providers
-        'SocialiteProviders\\CRHA\\CRHAExtendSocialite@handle',
+        'SocialiteProviders\\OIDC\\OIDCExtendSocialite@handle',
     ],
 ];
 ```
@@ -43,7 +43,7 @@ protected $listen = [
 You should now be able to use the provider like you would regularly use Socialite (assuming you have the facade installed):
 
 ```php
-return Socialite::driver('crha')->redirect();
+return Socialite::driver('oidc')->redirect();
 ```
 
 ### Returned User fields
@@ -55,7 +55,7 @@ return Socialite::driver('crha')->redirect();
 More fields are available under the `user` subkey:
 
 ```php
-$user = Socialite::driver('crha')->user();
+$user = Socialite::driver('oidc')->user();
 
 $locale = $user->user['locale'];
 $email_verified = $user->user['email_verified'];

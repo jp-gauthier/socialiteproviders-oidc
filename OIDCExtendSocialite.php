@@ -1,10 +1,10 @@
 <?php
 
-namespace SocialiteProviders\CRHA;
+namespace SocialiteProviders\OIDC;
 
 use SocialiteProviders\Manager\SocialiteWasCalled;
 
-class CRHAExtendSocialite
+class OIDCExtendSocialite
 {
     /**
      * Register the provider.
@@ -13,6 +13,6 @@ class CRHAExtendSocialite
      */
     public function handle(SocialiteWasCalled $socialiteWasCalled)
     {
-        $socialiteWasCalled->extendSocialite('crha', Provider::class);
+        $socialiteWasCalled->extendSocialite('oidc', Provider::class);
     }
 }

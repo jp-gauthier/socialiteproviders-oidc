@@ -1,6 +1,6 @@
 <?php
 
-namespace SocialiteProviders\CRHA;
+namespace SocialiteProviders\OIDC;
 
 use GuzzleHttp\RequestOptions;
 use SocialiteProviders\Manager\OAuth2\AbstractProvider;
@@ -16,7 +16,7 @@ class Provider extends AbstractProvider
     /**
      * Unique Provider Identifier.
      */
-    public const IDENTIFIER = 'CRHA';
+    public const IDENTIFIER = 'OIDC';
 
     /**
      * {@inheritdoc}
@@ -37,7 +37,7 @@ class Provider extends AbstractProvider
     }
 
     /**
-     * @return array OpenID data for CRHA
+     * @return array OpenID data for OIDC
      */
     protected function getOpenidConfig()
     {
