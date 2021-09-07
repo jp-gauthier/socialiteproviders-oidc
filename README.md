@@ -1,4 +1,4 @@
-# OpenID Connect (OIDC)
+# OpenID Connect (OIDC) for Laravel Socialite
 
 ```bash
 composer require jp-gauthier/socialiteproviders-oidc
@@ -12,10 +12,10 @@ Please see the [Base Installation Guide](https://socialiteproviders.com/usage/),
 
 ```php
 'oidc' => [
-    'client_id' => env('OPENID_CLIENT_ID'),
-    'client_secret' => env('OPENID_CLIENT_SECRET'),
-    'redirect' => env('OPENID_REDIRECT_URI'),
-    'url' => env('OPENID_URL'), // URL of your installation
+    'client_id' => env('OIDC_CLIENT_ID'),
+    'client_secret' => env('OIDC_CLIENT_SECRET'),
+    'redirect' => env('OIDC_REDIRECT_URI'),
+    'url' => env('OIDC_URL'), // URL of your installation
 ],
 ```
 
