@@ -21,7 +21,25 @@ class Provider extends AbstractProvider
     /**
      * {@inheritdoc}
      */
-    protected $scopes = ['openid', 'email', 'profile'];
+    protected $scopes = [
+
+        // required; to indicate that the application intends to use OIDC to verify the user's identity
+        // Returns the sub claim, which uniquely identifies the user. 
+        // In an ID Token : iss, aud, exp, iat, and at_hash claims will also be present.
+        'openid',
+
+        // Returns the email claim, which contains the user's email address
+        // email, email_verified (which is a boolean indicating whether the email address was verified by the user).
+        'email',
+
+        // Returns claims that represent basic profile information
+        // name, family_name, given_name, middle_name, nickname, picture, and updated_at.
+        'profile',
+
+        // Returns user's roles
+        // crha-member, crha-member-type-1, crha-member-status-reg, etc.
+        'roles',
+    ];
 
     /**
      * {@inheritdoc}
@@ -70,6 +88,8 @@ class Provider extends AbstractProvider
      */
     protected function buildAuthUrlFromBase($url, $state)
     {
+        $nonce = 'test';
+
         return $url.'?'.http_build_query(
             [
                 'client_id'     => $this->clientId,
@@ -78,6 +98,7 @@ class Provider extends AbstractProvider
                 'response_type' => 'code id_token',
                 'scope'         => $this->formatScopes($this->scopes, $this->scopeSeparator),
                 'state'         => $state,
+                'nonce'         => $nonce,
             ],
             '',
             '&',
