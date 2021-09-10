@@ -2,12 +2,15 @@
 
 namespace SocialiteProviders\OIDC;
 
+use Exception;
 use GuzzleHttp\RequestOptions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Two\InvalidStateException;
+use phpseclib3\Crypt\PublicKeyLoader;
+use phpseclib3\Crypt\RSA;
 use SocialiteProviders\Manager\OAuth2\AbstractProvider;
 use SocialiteProviders\Manager\OAuth2\User;
 
@@ -23,6 +26,8 @@ class Provider extends AbstractProvider
      */
     public const IDENTIFIER = 'OIDC';
 
+    public $configurations = null;
+
     /**
      * {@inheritdoc}
      */
@@ -30,7 +35,7 @@ class Provider extends AbstractProvider
 
         // required; to indicate that the application intends to use OIDC to verify the user's identity
         // Returns the sub claim, which uniquely identifies the user. 
-        // In an ID Token : iss, aud, exp, iat, and at_hash claims will also be present.
+        // Also presents in an ID Token : iss, aud, exp, iat, c_hash.
         'openid',
 
         // Returns the email claim, which contains the user's email address
@@ -71,17 +76,15 @@ class Provider extends AbstractProvider
      */
     protected function getOpenidConfig()
     {
-        static $data = null;
-
-        if ($data === null) {
+        if ($this->configurations === null) {
             $configUrl = $this->getConfig('url').'/.well-known/openid-configuration';
 
             $response = $this->getHttpClient()->get($configUrl);
 
-            $data = json_decode((string) $response->getBody(), true);
+            $this->configurations = json_decode((string) $response->getBody(), true);
         }
 
-        return $data;
+        return $this->configurations;
     }
 
     /**
@@ -221,7 +224,10 @@ class Provider extends AbstractProvider
         }
 
         // Decrypt JWT token
-        $payload = $this->decodeJWT($this->request->get('id_token'));
+        $payload = $this->decodeJWT(
+            $this->request->get('id_token'), 
+            $this->request->get('code')
+        );
         $this->user = $this->mapUserToObject((array) $payload);
 
         /**
@@ -232,7 +238,7 @@ class Provider extends AbstractProvider
         $token = Arr::get($response, 'access_token');
 
         dd($this->user);
-        
+
         return $this->user->setToken($token)
                     // ->setRefreshToken(Arr::get($response, 'refresh_token'))
                     ->setExpiresIn(Arr::get($response, 'expires_in'));
@@ -305,39 +311,33 @@ class Provider extends AbstractProvider
     }
 
     /**
-     * Determine if this is an invalid ID Token
-     * Validate with c_hash
+     * Determine if the code is valid
+     * c_hash must correspond to the encoded code
      * Ref: https://auth0.com/docs/authorization/flows/call-api-hybrid-flow
      *
      * @return bool
      */
-    protected function isInvalidIDToken($jwt, $alg, $c_hash)
+    protected function isInvalidCode($code, $alg, $c_hash)
     {
-        return false;
-
         // 1. Using the hash algorithm specified in the alg claim in the ID Token header, hash the octets of the ASCII representation of the code.
         $bit = '256'; // 256/384/512 
         if ($alg != 'none') {
             $bit = substr($alg, 2, 3);
         }
-        $jwt_ascii = Str::ascii($jwt);
+        $code_ascii = Str::ascii($code);
         $binary_mode = true;
-        $jwt_hashed = hash('sha'.$bit, $jwt_ascii, $binary_mode);
+        $code_hashed = hash('sha'.$bit, $code_ascii, $binary_mode);
         
-        // 2. Base64url-encode the left-most half of the hash.
-        $len = ((int)$bit)/16;
-        $left_part = substr($jwt_hashed, 0, $len);
-        $result = $this->base64URLEncode($left_part);
-
+        // // 2. Base64url-encode the left-most half of the hash.
+        $len = strlen($code_hashed)/2;
+        $left_part = substr($code_hashed, 0, $len);
+        $result = $this->base64url_encode($left_part);
+        
         // 3. Check that the result matches the c_hash value.
-        echo "RESULT : ".$result;
-        echo "<br>";
-        echo "C_HASH : ".$c_hash;
-
-        die();
+        return $result !== $c_hash;
     }
 
-    protected function decodeJWT($jwt)
+    protected function decodeJWT($jwt, $code)
     {
         try {
 
@@ -354,11 +354,11 @@ class Provider extends AbstractProvider
         } catch (\Exception $e) {
             throw new InvalidIDTokenException("Failed to parse ID Token.", 401);
         }
-        
-        if ($this->isInvalidIDToken($jwt, $header->alg, $payload->c_hash)) {
-            throw new InvalidNonceException("Failed to verify ID Token.", 401);
+
+        if ($this->isInvalidCode($code, $header->alg, $payload->c_hash)) {
+            throw new InvalidCodeException("Failed to verify code with token c_hash.", 401);
         }
-        
+
         if ($this->isInvalidNonce($payload->nonce)) {
             throw new InvalidNonceException("The JWT contains an invalid nonce.", 401);
         }
@@ -366,15 +366,13 @@ class Provider extends AbstractProvider
         return $payload;
     }
 
-    /**
-     * Base64 + URLEncode a string
-     * Ref: https://github.com/ritou/php-Akita_OpenIDConnect/blob/master/src/Akita/OpenIDConnect/Util/Base64.php
-     */
-    private function base64URLEncode($str)
-    {
-        $enc = base64_encode($str);
-        $enc = rtrim($enc, "=");
-        $enc = strtr($enc, "+/", "-_");
-        return $enc;
+    private function base64url_encode($data)
+    { 
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '='); 
+    }
+
+    private function base64url_decode($data)
+    { 
+        return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT)); 
     }
 }

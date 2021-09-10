@@ -4,7 +4,7 @@ namespace SocialiteProviders\OIDC;
 
 use InvalidArgumentException;
 
-class InvalidIDTokenException extends InvalidArgumentException
+class InvalidCodeException extends InvalidArgumentException
 {
     //
 }
