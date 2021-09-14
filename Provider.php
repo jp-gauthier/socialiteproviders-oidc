@@ -254,7 +254,7 @@ class Provider extends AbstractProvider
                 'id'        => $user['sub'],
                 'idp'       => $user['idp'],
                 'name'      => $user['name'],
-                'email'     => $user['email'],
+                'email'     => isset($user['email']) ? $user['email'] : null,
                 'role'      => $user['role'],
             ]
         );
