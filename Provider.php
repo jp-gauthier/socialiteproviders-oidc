@@ -106,13 +106,19 @@ class Provider extends AbstractProvider
         return $url.'?'.http_build_query(
             [
                 'client_id'     => $this->clientId,
+
                 'redirect_uri'  => $this->redirectUrl,
+
                 // https://darutk.medium.com/diagrams-of-all-the-openid-connect-flows-6968e3990660
                 'response_type' => 'code id_token',
+
                 // Sends the token response as a form post instead of a fragment encoded redirect
                 'response_mode' => 'form_post',
+
                 'scope'         => $this->formatScopes($this->scopes, $this->scopeSeparator),
+
                 'state'         => $state,
+
                 // https://auth0.com/docs/authorization/flows/mitigate-replay-attacks-when-using-the-implicit-flow
                 'nonce'         => $this->getCurrentNonce(),
             ],
@@ -188,8 +194,7 @@ class Provider extends AbstractProvider
      */
     protected function getUserByToken($token)
     {
-        echo "getUserByToken";
-        die();
+        return $this->user;
 
         /*
         $response = $this->getHttpClient()->post(
@@ -228,20 +233,22 @@ class Provider extends AbstractProvider
             $this->request->get('id_token'), 
             $this->request->get('code')
         );
+        
         $this->user = $this->mapUserToObject((array) $payload);
 
         /**
          * Send the code to get an access_token
          * Response contains : id_token, access_token, expires_in, token_type, scope
          */
+        /*
         $response = $this->getAccessTokenResponse($this->getCode());
         $token = Arr::get($response, 'access_token');
-
-        dd($this->user);
-
         return $this->user->setToken($token)
-                    // ->setRefreshToken(Arr::get($response, 'refresh_token'))
-                    ->setExpiresIn(Arr::get($response, 'expires_in'));
+            ->setRefreshToken(Arr::get($response, 'refresh_token'))
+            ->setExpiresIn(Arr::get($response, 'expires_in'));
+        */
+
+        return $this->user;
     }
 
     /**
@@ -251,11 +258,11 @@ class Provider extends AbstractProvider
     {
         return (new User())->setRaw($user)->map(
             [
-                'id'        => $user['sub'],
-                'idp'       => $user['idp'],
-                'name'      => $user['name'],
-                'email'     => isset($user['email']) ? $user['email'] : null,
-                'role'      => $user['role'],
+                'no_dossier' => $user['sub'],
+                'idp'        => $user['idp'], // crha-member
+                'name'       => $user['name'],
+                'email'      => isset($user['email']) ? $user['email'] : null, // can be empty
+                'role'       => $user['role'], // array
             ]
         );
     }
@@ -298,6 +305,7 @@ class Provider extends AbstractProvider
     
     /**
      * Determine if the current token has a mismatching "nonce".
+     * nonce must be validated to prevent replay attacks
      *
      * @return bool
      */
@@ -314,7 +322,9 @@ class Provider extends AbstractProvider
      * Determine if the code is valid
      * c_hash must correspond to the encoded code
      * Ref: https://auth0.com/docs/authorization/flows/call-api-hybrid-flow
-     *
+     * Ref: https://openid.net/specs/openid-connect-core-1_0.html#ImplicitAuthResponse
+     * (3.3.2.10.  Authorization Code Validation)
+     * 
      * @return bool
      */
     protected function isInvalidCode($code, $alg, $c_hash)
@@ -328,7 +338,7 @@ class Provider extends AbstractProvider
         $binary_mode = true;
         $code_hashed = hash('sha'.$bit, $code_ascii, $binary_mode);
         
-        // // 2. Base64url-encode the left-most half of the hash.
+        // 2. Base64url-encode the left-most half of the hash.
         $len = strlen($code_hashed)/2;
         $left_part = substr($code_hashed, 0, $len);
         $result = $this->base64url_encode($left_part);
@@ -340,7 +350,6 @@ class Provider extends AbstractProvider
     protected function decodeJWT($jwt, $code)
     {
         try {
-
             list($jwt_header, $jwt_payload, $jwt_signature) = explode(".", $jwt);
 
             // alg, kid, typ, x5t
