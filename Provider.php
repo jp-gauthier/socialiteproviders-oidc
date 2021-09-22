@@ -103,35 +103,51 @@ class Provider extends AbstractProvider
      */
     protected function buildAuthUrlFromBase($url, $state)
     {
-        return $url.'?'.http_build_query(
-            [
-                'client_id'     => $this->clientId,
-
-                'redirect_uri'  => $this->redirectUrl,
-
-                // https://darutk.medium.com/diagrams-of-all-the-openid-connect-flows-6968e3990660
-                'response_type' => 'code id_token',
-
-                // Sends the token response as a form post instead of a fragment encoded redirect
-                'response_mode' => 'form_post',
-
-                'scope'         => $this->formatScopes($this->scopes, $this->scopeSeparator),
-
-                'state'         => $state,
-
-                // https://auth0.com/docs/authorization/flows/mitigate-replay-attacks-when-using-the-implicit-flow
-                'nonce'         => $this->getCurrentNonce(),
-            ],
-            '',
-            '&',
-            $this->encodingType
-        );
+        return $url.'?'.http_build_query($this->getCodeFields($state), '', '&', $this->encodingType);
     }
-    
+
     /**
-     * Redirect the user of the application to the provider's authentication screen.
-     *
-     * @return \Illuminate\Http\RedirectResponse
+     * {@inheritdoc}
+     */
+    protected function getCodeFields($state = null)
+    {
+        $fields = [
+            'client_id' => $this->clientId,
+            'redirect_uri' => $this->redirectUrl,
+            'scope' => $this->formatScopes($this->getScopes(), $this->scopeSeparator),
+            
+            // Implicit flow response_type
+            // https://darutk.medium.com/diagrams-of-all-the-openid-connect-flows-6968e3990660
+            'response_type' => 'code id_token',
+
+            // Sends the token response as a form post instead of a fragment encoded redirect
+            'response_mode' => 'form_post',
+            
+            // Always show login form
+            // https://auth0.com/docs/login/max-age-reauthentication
+            'prompt' => 'login',
+        ];
+
+        if ($this->usesState()) {
+            $fields['state'] = $state;
+        }
+
+        if ($this->usesNonce()) {
+            // Implicit flow nonce
+            // https://auth0.com/docs/authorization/flows/mitigate-replay-attacks-when-using-the-implicit-flow
+            $fields['nonce'] = $this->getCurrentNonce();
+        }
+
+        if ($this->usesPKCE()) {
+            $fields['code_challenge'] = $this->getCodeChallenge();
+            $fields['code_challenge_method'] = $this->getCodeChallengeMethod();
+        }
+
+        return array_merge($fields, $this->parameters);
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function redirect()
     {
@@ -194,9 +210,6 @@ class Provider extends AbstractProvider
      */
     protected function getUserByToken($token)
     {
-        return $this->user;
-
-        /*
         $response = $this->getHttpClient()->post(
             $this->getUserInfoUrl().'?'.http_build_query(
                 [
@@ -211,7 +224,6 @@ class Provider extends AbstractProvider
         );
 
         return json_decode((string) $response->getBody(), true);
-        */
     }
 
     /**
@@ -259,9 +271,15 @@ class Provider extends AbstractProvider
         return (new User())->setRaw($user)->map(
             [
                 'no_dossier' => $user['sub'],
-                'idp'        => $user['idp'], // crha-member
+                
+                'email'      => $user['email'] ?? null,
                 'name'       => $user['name'],
-                'email'      => isset($user['email']) ? $user['email'] : null, // can be empty
+                'civility'   => $user['civility'] ?? null, // TODO
+                'firstname'  => $user['given_name'] ?? null,
+                'lastname'   => $user['family_name'] ?? null,
+                'title'      => $user['title'] ?? null, // TODO
+
+                'idp'        => $user['idp'],
                 'role'       => $user['role'], // array
             ]
         );
