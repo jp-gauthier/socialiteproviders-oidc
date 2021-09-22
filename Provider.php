@@ -255,6 +255,7 @@ class Provider extends AbstractProvider
         /*
         $response = $this->getAccessTokenResponse($this->getCode());
         $token = Arr::get($response, 'access_token');
+        $userDetails = $this->getUserByToken($token);
         return $this->user->setToken($token)
             ->setRefreshToken(Arr::get($response, 'refresh_token'))
             ->setExpiresIn(Arr::get($response, 'expires_in'));
@@ -270,21 +271,19 @@ class Provider extends AbstractProvider
     {
         return (new User())->setRaw($user)->map(
             [
-                'no_dossier' => $user['sub'],
-                
-                'email'      => $user['email'] ?? null,
-                'name'       => $user['name'],
-                'civility'   => $user['civility'] ?? null, // TODO
-                'firstname'  => $user['given_name'] ?? null,
-                'lastname'   => $user['family_name'] ?? null,
-                'title'      => $user['title'] ?? null, // TODO
+                'sub'           => $user['sub'],
 
-                'idp'        => $user['idp'],
-                'role'       => $user['role'], // array
+                'email'         => $user['email'] ?? null,
+                'name'          => $user['name'] ?? null,
+                'given_name'    => $user['given_name'] ?? null,
+                'family_name'   => $user['family_name'] ?? null,
+
+                'idp'           => $user['idp'] ?? null,
+                'role'          => $user['role'] ?? null,
             ]
         );
     }
-    
+
     /**
      * Determine if the provider is operating with nonce.
      *
