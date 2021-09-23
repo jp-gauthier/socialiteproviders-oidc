@@ -8,7 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Laravel\Socialite\Two\InvalidStateException;
+// use Laravel\Socialite\Two\InvalidStateException;
 use phpseclib3\Crypt\PublicKeyLoader;
 use phpseclib3\Crypt\RSA;
 use SocialiteProviders\Manager\OAuth2\AbstractProvider;
