@@ -237,7 +237,7 @@ class Provider extends AbstractProvider
         }
 
         if ($this->hasInvalidState()) {
-            throw new InvalidStateException("Callback data contains an invalid state.", 401);
+            throw new InvalidStateException("Callback: invalid state.", 401);
         }
 
         // Decrypt JWT token
@@ -245,7 +245,11 @@ class Provider extends AbstractProvider
             $this->request->get('id_token'), 
             $this->request->get('code')
         );
-        
+
+        if ($this->hasEmptyEmail($payload)) {
+            throw new EmptyEmailException("JWT: User has no email.", 401);
+        }
+
         $this->user = $this->mapUserToObject((array) $payload);
 
         /**
@@ -334,6 +338,14 @@ class Provider extends AbstractProvider
 
         return ! (strlen($nonce) > 0 && $nonce === $this->getCurrentNonce());
     }
+    
+    protected function hasEmptyEmail($payload)
+    {
+        if (!isset($payload->email) || strlen($payload->email) == 0) {
+            return true;
+        }
+        return false;
+    }
 
     /**
      * Determine if the code is valid
@@ -378,15 +390,15 @@ class Provider extends AbstractProvider
             $payload = json_decode(base64_decode($jwt_payload));
 
         } catch (\Exception $e) {
-            throw new InvalidIDTokenException("Failed to parse ID Token.", 401);
+            throw new InvalidIDTokenException("JWT: Failed to parse.", 401);
         }
 
         if ($this->isInvalidCode($code, $header->alg, $payload->c_hash)) {
-            throw new InvalidCodeException("Failed to verify code with token c_hash.", 401);
+            throw new InvalidCodeException("JWT: Failed to verify code vs c_hash.", 401);
         }
 
         if ($this->isInvalidNonce($payload->nonce)) {
-            throw new InvalidNonceException("The JWT contains an invalid nonce.", 401);
+            throw new InvalidNonceException("JWT: Contains an invalid nonce.", 401);
         }
 
         return $payload;
