@@ -67,12 +67,7 @@ class Provider extends AbstractProvider
     
     public function getLoginPage()
     {
-        return $this->loginPage;
-    }
-
-    public function setLoginPage($loginPage)
-    {
-        $this->loginPage = $loginPage;
+        return route($this->getConfig('login_route'));
     }
 
     /**
@@ -80,7 +75,10 @@ class Provider extends AbstractProvider
      */
     public static function additionalConfigKeys()
     {
-        return ['url'];
+        return [
+            'url',
+            'login_route'
+        ];
     }
 
     /**
