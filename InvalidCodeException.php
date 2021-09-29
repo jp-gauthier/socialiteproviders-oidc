@@ -3,6 +3,7 @@
 namespace SocialiteProviders\OIDC;
 
 use InvalidArgumentException;
+use Laravel\Socialite\Facades\Socialite;
 
 class InvalidCodeException extends InvalidArgumentException
 {
@@ -15,7 +16,7 @@ class InvalidCodeException extends InvalidArgumentException
     public function render($request)
     {
         $message = "La validation du JWT a échoué. Veuillez réessayer.";
-        $url = route_membre('login');
+        $url = Socialite::driver('oidc')->getLoginPage();
         return redirect($url)->withErrors(['msg' => $message]);
     }
 }

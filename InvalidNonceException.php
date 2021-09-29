@@ -3,6 +3,7 @@
 namespace SocialiteProviders\OIDC;
 
 use InvalidArgumentException;
+use Laravel\Socialite\Facades\Socialite;
 
 class InvalidNonceException extends InvalidArgumentException
 {
@@ -15,7 +16,7 @@ class InvalidNonceException extends InvalidArgumentException
     public function render($request)
     {
         $message = "La vérification du nonce a échoué. Veuillez réessayer.";
-        $url = route_membre('login');
+        $url = Socialite::driver('oidc')->getLoginPage();
         return redirect($url)->withErrors(['msg' => $message]);
     }
 }

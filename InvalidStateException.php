@@ -3,6 +3,7 @@
 namespace SocialiteProviders\OIDC;
 
 use InvalidArgumentException;
+use Laravel\Socialite\Facades\Socialite;
 
 class InvalidStateException extends InvalidArgumentException
 {
@@ -15,7 +16,7 @@ class InvalidStateException extends InvalidArgumentException
     public function render($request)
     {
         $message = "La vérification de l'état de la demande a échoué. Veuillez réessayer.";
-        $url = route_membre('login');
+        $url = Socialite::driver('oidc')->getLoginPage();
         return redirect($url)->withErrors(['msg' => $message]);
     }
 }

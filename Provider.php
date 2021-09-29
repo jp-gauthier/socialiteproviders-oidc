@@ -55,6 +55,8 @@ class Provider extends AbstractProvider
      * {@inheritdoc}
      */
     protected $scopeSeparator = ' ';
+    
+    protected $loginPage = '';
 
     /**
      * Indicates if the nonce should be utilized.
@@ -63,6 +65,16 @@ class Provider extends AbstractProvider
      */
     protected $usesNonce = true;
     
+    public function getLoginPage()
+    {
+        return $this->loginPage;
+    }
+
+    public function setLoginPage($loginPage)
+    {
+        $this->loginPage = $loginPage;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -239,7 +251,7 @@ class Provider extends AbstractProvider
         if ($this->hasInvalidState()) {
             throw new InvalidStateException("Callback: invalid state.", 401);
         }
-
+        
         // Decrypt JWT token
         $payload = $this->decodeJWT(
             $this->request->get('id_token'), 
@@ -251,7 +263,7 @@ class Provider extends AbstractProvider
         }
 
         $this->user = $this->mapUserToObject((array) $payload);
-
+        
         /**
          * Send the code to get an access_token
          * Response contains : id_token, access_token, expires_in, token_type, scope
