@@ -392,12 +392,12 @@ class Provider extends AbstractProvider
             list($jwt_header, $jwt_payload, $jwt_signature) = explode(".", $jwt);
 
             // alg, kid, typ, x5t
-            $header = json_decode(base64_decode($jwt_header));
+            $header = json_decode($this->base64url_decode($jwt_header));
 
             // nbf, exp, iss, aud, nonce, iat, c_hash, sid, auth_time, amr
             // sub (dossier), idp (crha-member)
             // name, role (array), given_name, family_name, email
-            $payload = json_decode(base64_decode($jwt_payload));
+            $payload = json_decode($this->base64url_decode($jwt_payload));
 
         } catch (\Exception $e) {
             throw new InvalidIDTokenException("JWT: Failed to parse.", 401);
