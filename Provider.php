@@ -245,7 +245,7 @@ class Provider extends AbstractProvider
         if ($this->user) {
             return $this->user;
         }
-
+        
         if ($this->hasInvalidState()) {
             throw new InvalidStateException("Callback: invalid state.", 401);
         }
