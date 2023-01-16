@@ -88,7 +88,7 @@ class Provider extends AbstractProvider
     {
         if ($this->configurations === null) {
             $configUrl = $this->getConfig('url').'/.well-known/openid-configuration';
-
+            
             $response = $this->getHttpClient()->get($configUrl);
 
             $this->configurations = json_decode((string) $response->getBody(), true);
@@ -242,6 +242,14 @@ class Provider extends AbstractProvider
      */
     public function user()
     {
+        // Test mode
+        if (app()->environment() !== 'production' && !is_null(request()->route('no_dossier'))) {
+            $payload = [
+                'sub'           => request()->route('no_dossier'),
+            ];
+            $this->user = $this->mapUserToObject((array) $payload);
+        }
+
         if ($this->user) {
             return $this->user;
         }
