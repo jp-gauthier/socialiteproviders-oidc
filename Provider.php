@@ -245,7 +245,7 @@ class Provider extends AbstractProvider
         // Test mode
         if (app()->environment() !== 'production' && !is_null(request()->route('no_dossier'))) {
             $payload = [
-                'sub'           => request()->route('no_dossier'),
+                'sub' => request()->route('no_dossier'),
             ];
             $this->user = $this->mapUserToObject((array) $payload);
         }
